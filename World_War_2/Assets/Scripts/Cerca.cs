@@ -12,7 +12,7 @@ public class Cerca : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        aberto = abre.position;
+       if (abre != null) aberto = abre.position;
     }
 
     // Update is called once per frame
