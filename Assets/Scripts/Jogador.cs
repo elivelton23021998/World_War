@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
 
-public class Jogador : MonoBehaviour
+public class Jogador : MonoBehaviourPunCallbacks
 {
 	public Image telaMorte;
 
@@ -24,7 +25,12 @@ public class Jogador : MonoBehaviour
 
     void Start()
 	{
-		municao.text = "";
+		lifeBar= GameObject.FindGameObjectWithTag("Life").GetComponent<Slider>();
+		texto = GameObject.FindGameObjectWithTag("Legenda").GetComponent<Text>();
+        municao = GameObject.FindGameObjectWithTag("MunicaoView").GetComponent<Text>();
+		vidaInimigo= GameObject.FindGameObjectWithTag("EnemyLife").GetComponent<Text>();
+
+        municao.text = "";
 		vidaInimigo.text = "";
 
 		lifeBar.maxValue = vida;
@@ -33,73 +39,77 @@ public class Jogador : MonoBehaviour
 		//respawnRot = transform.rotation;
     }
 
-    void Update()
-    {
-
-		lifeBar.value = vida;
-
-		if (vida < 1 && !morto)
+	void Update()
+	{
+		if (photonView.IsMine)
 		{
-			morto = true;
-			StartCoroutine(Morte());
-		}
+			lifeBar.value = vida;
 
-		if (Input.GetKeyDown(KeyCode.R))
-        {
-			SceneManager.LoadScene(0);
-		}
+			if (vida < 1 && !morto)
+			{
+				morto = true;
+				StartCoroutine(Morte());
+			}
 
-		if (morto) return;// o return cancela o update e evita de fazer o if
+			if (Input.GetKeyDown(KeyCode.R))
+			{
+				SceneManager.LoadScene(0);
+			}
 
-		Ray raio = Camera.main.ScreenPointToRay(Input.mousePosition);
-		Debug.DrawRay(raio.origin, raio.direction * 10, Color.cyan);
-		RaycastHit hit;
-		Selecionavel selecao = null;
+			if (morto) return;// o return cancela o update e evita de fazer o if
 
-
-		if (Physics.Raycast(raio, out hit, 10)) {
-			selecao = hit.transform.GetComponent<Selecionavel>();
-		}
-
-		// Ativa a nova seleção
-		if (selecao) {
-			selecao.Ativar();
-		}
-
-      //  Desativa a seleção anterior
-
-        if (selecionado != selecao)
-        {
-            if (selecionado) selecionado.Desativar();
-            selecionado = selecao;
-        }
-        if (selecionado)
-        {
-            texto.text = selecionado.texto;
-			
-            if (Input.GetKeyDown(KeyCode.Mouse1))
-            {
-				//if (.enabled)
-                Clicavel clicado = selecionado.GetComponent<Clicavel>();
-			//	Teleporte tele = selecionado.GetComponent<Teleporte>();
+			Ray raio = Camera.main.ScreenPointToRay(Input.mousePosition);
+			Debug.DrawRay(raio.origin, raio.direction * 10, Color.cyan);
+			RaycastHit hit;
+			Selecionavel selecao = null;
 
 
-				if (clicado)
-                {
-					if (clicado.teleporte)
+			if (Physics.Raycast(raio, out hit, 10))
+			{
+				selecao = hit.transform.GetComponent<Selecionavel>();
+			}
+
+			// Ativa a nova seleção
+			if (selecao)
+			{
+				selecao.Ativar();
+			}
+
+			//  Desativa a seleção anterior
+
+			if (selecionado != selecao)
+			{
+				if (selecionado) selecionado.Desativar();
+				selecionado = selecao;
+			}
+			if (selecionado)
+			{
+				texto.text = selecionado.texto;
+
+				if (Input.GetKeyDown(KeyCode.Mouse1))
+				{
+					//if (.enabled)
+					Clicavel clicado = selecionado.GetComponent<Clicavel>();
+					//	Teleporte tele = selecionado.GetComponent<Teleporte>();
+
+
+					if (clicado)
 					{
-						StartCoroutine(Teleportar(clicado.teleSpawn));
+						if (clicado.teleporte)
+						{
+							StartCoroutine(Teleportar(clicado.teleSpawn));
+						}
+						else clicado.Ativar();
 					}
-					else clicado.Ativar();
-                }
-				
-            }
-        }
-        else
-        {
-            texto.text = "";
-        }
-    }
+
+				}
+			}
+			else
+			{
+				texto.text = "";
+			}
+		}
+	}
 
     private void OnTriggerEnter(Collider other)
     {

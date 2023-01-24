@@ -8,11 +8,12 @@ public class Music : MonoBehaviour
     
     float masterVol;
 
-    public Slider masterSlider;
+    Slider masterSlider;
 
     // Start is called before the first frame update
     void Start()
     {
+        masterSlider = GameObject.FindGameObjectWithTag("Musica").GetComponent<Slider>();
         masterSlider.value = PlayerPrefs.GetFloat("MasterSond");
 
 

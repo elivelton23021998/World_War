@@ -11,6 +11,13 @@ TagManager:
   - Metralha
   - Agua
   - Marcador
+  - FX
+  - Bullet
+  - Musica
+  - MunicaoView
+  - Life
+  - EnemyLife
+  - Legenda
   layers:
   - Default
   - TransparentFX

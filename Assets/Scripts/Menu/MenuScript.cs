@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
+using Photon.Realtime;
+using System;
 
-public class MenuScript : MonoBehaviour
+public class MenuScript :MonoBehaviourPunCallbacks
 {
-    [SerializeField] //telas
-    private GameObject logo, menu;
-
-    [SerializeField] //botoes
-    private GameObject botoes;// btnNovoJogo, btnContinuar, btnConfiguracoes, btnCreditos, btnSair;
-
-    // Start is called before the first frame update
+    static string nomeJogador;
+    [SerializeField] InputField texto;
+    
     void Start()
     {
         Cursor.lockState = CursorLockMode.Confined;
@@ -23,17 +22,15 @@ public class MenuScript : MonoBehaviour
 
     }
 
-
-
-    public void OpenMenu()
-    {
-        logo.SetActive (false);
-        menu.SetActive (true);
-    }
-
     public void NovoJogo()
     {
-        SceneManager.LoadScene("Game");
+        nomeJogador = texto.text;
+
+        PhotonNetwork.AutomaticallySyncScene = true; // sincronizar cena dos jogadores
+
+        PhotonNetwork.ConnectUsingSettings();// conecta ao servidor
+
+        
     }
 
     public void Continuar()
@@ -55,5 +52,43 @@ public class MenuScript : MonoBehaviour
         AudioListener.pause = false;
     }
 
+
+
+    ////////////////////////////////////// parte online 
     
+    
+    
+    
+    
+    public override void OnConnectedToMaster() //uma vez conectado ao servidor...
+    {
+        base.OnConnectedToMaster();
+        print("OnConnectedToMaster");
+         
+        PhotonNetwork.JoinRandomRoom();// joga o jogador a uma sala qualquer que ja esteja criada
+    }
+
+    public override void OnJoinRandomFailed(short returnCode, string message) // se nao tiver sala disponivel...
+    {
+        base.OnJoinRandomFailed(returnCode, message);
+        print("OnJoinRandomFailed" + message);
+        
+        PhotonNetwork.CreateRoom(null); // criar nova sala com o nome
+    }
+
+    public override void OnJoinedRoom()//se entrou na sala...
+    {
+        base.OnJoinedRoom();
+        print("OnJoinedRoom()");
+        PhotonNetwork.LoadLevel("Game");
+
+    }
+
+    public override void OnDisconnected(DisconnectCause cause)
+    {
+        base.OnDisconnected(cause);
+        print("OnDisconnected" + cause);
+        
+        PhotonNetwork.LoadLevel("Menu");
+    }
 }

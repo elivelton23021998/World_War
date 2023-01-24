@@ -8,11 +8,11 @@ using UnityEngine.SceneManagement;
 
 public class Torreta : MonoBehaviour
 {
-    public float vida=10;
+    public float vida = 10;
 
     public GameObject tiro, jogador, spawn, recompensa;
 
-    public float angulo=45, distanceRay=30, rotVel=120;
+    public float angulo = 45, distanceRay = 30, rotVel = 120;
 
     float tempo;
 
@@ -29,17 +29,24 @@ public class Torreta : MonoBehaviour
     {
         agente = GetComponent<NavMeshAgent>();
         x = vida;
+        StartCoroutine(ProcuraJogador());
         //jogador = GameObject.Find("Jogador");  
     }
 
     // Update is called once per frame
     void Update()
     {
-       if (chefe)
+      
+
+      
+
+
+
+        if (chefe)
         {
-            if (vida < 25 && !drop )
+            if (vida < 25 && !drop)
             {
-                
+
                 recompensa = Instantiate(recompensa, transform.position, recompensa.transform.rotation);
                 drop = true;
             }
@@ -80,7 +87,7 @@ public class Torreta : MonoBehaviour
                     atirando = true;
                 }
 
-                
+
             }
         }
         else
@@ -92,7 +99,7 @@ public class Torreta : MonoBehaviour
             }
             transform.Rotate(0, rotVel * Time.deltaTime, 0);//player roda 180 graus por segundo
         }
-      
+
     }
 
     bool JogadorProximo()
@@ -102,14 +109,14 @@ public class Torreta : MonoBehaviour
         {
 
             Vector3 alvo = jogador.transform.position - transform.position;
-            if(Vector3.Angle(transform.forward,alvo)<=angulo)// se o angulo entre a visao da torreta e o caminho do plauer ser a msm
+            if (Vector3.Angle(transform.forward, alvo) <= angulo)// se o angulo entre a visao da torreta e o caminho do plauer ser a msm
             {
                 Ray raio = new Ray(transform.position, alvo);
                 Debug.DrawRay(raio.origin, raio.direction, Color.red);
                 RaycastHit hit;
-                if(Physics.Raycast(raio, out hit, distanceRay))
+                if (Physics.Raycast(raio, out hit, distanceRay))
                 {
-                    if (hit.transform==jogador.transform)
+                    if (hit.transform == jogador.transform)
                     {
                         return true;
                     }
@@ -119,12 +126,12 @@ public class Torreta : MonoBehaviour
         }
         return false;
     }
-    
+
     IEnumerator EndGame()
     {
         Color cor = telaFim.color;
         cor.a = 0;
-        
+
         while (cor.a < 0.9f)
         {
             cor.a += Time.deltaTime;
@@ -136,7 +143,23 @@ public class Torreta : MonoBehaviour
         yield return new WaitForSeconds(3);
         SceneManager.LoadScene(0);
     }
+
+    IEnumerator ProcuraJogador()
+    {
+        GameObject[] jogadores = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject bola in jogadores)
+        {
+            if (Vector3.Distance(bola.transform.position, transform.position) < Vector3.Distance(jogador.transform.position, transform.position))
+            {
+                jogador= bola;
+            }
+        }
+        yield return new WaitForSeconds(0.1f);
+        StartCoroutine(ProcuraJogador());
+    }
 }
+            
+        
 
 
 
